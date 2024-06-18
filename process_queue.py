@@ -12,23 +12,6 @@ _db_name = 'test'
 _username = 'root'
 _password = 'root'
 
-fake_message = {
-    "srcport": "63040",
-    "dstintf": "port1",
-    "policyid": "23",
-    "srcip": "10.255.5.245",
-    "proto": "17",
-    "srcintf": "port2",
-    "sentbyte": "81",
-    "devname": "FGT_LabSecurity",
-    "trandisp": "snat",
-    "dstintfrole": "undefined",
-    "dstip": "8.8.8.8",
-    "srcname": "AD",
-    "srcintfrole": "undefined",
-    "dstport": "53"
-}
-
 orient_handler = OrientDBHandler(_host, _port, _db_name, _username, _password)
 
 def process_message(ch, method, properties, body):
