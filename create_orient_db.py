@@ -10,24 +10,33 @@ if self.protocol > SUPPORTED_PROTOCOL:
 _database_name = "test"
 
 _database_ver_link_creation_commands = [
-    "CREATE CLASS LinkToHost EXTENDS E;",
-    "CREATE PROPERTY LinkToHost.trandisp STRING;",
-    "CREATE PROPERTY LinkToHost.dstport INTEGER;",
-    "CREATE PROPERTY LinkToHost.srcintf STRING;",
-    "CREATE PROPERTY LinkToHost.policyid INTEGER;",
-    "CREATE PROPERTY LinkToHost.proto INTEGER;",
-    "CREATE PROPERTY LinkToHost.srcip STRING;",
-    "CREATE PROPERTY LinkToHost.dstip STRING;",
-    "CREATE PROPERTY LinkToHost.srcport INTEGER;",
-    "CREATE PROPERTY LinkToHost.devname STRING;",
-    "CREATE PROPERTY LinkToHost.sentbyte INTEGER;",
-    "CREATE PROPERTY LinkToHost.dstintf STRING;"
+    "CREATE CLASS SourceToDestination EXTENDS E;",
+    "CREATE PROPERTY SourceToDestination.trandisp STRING;",
+    "CREATE PROPERTY SourceToDestination.dstport INTEGER;",
+    "CREATE PROPERTY SourceToDestination.srcintf STRING;",
+    "CREATE PROPERTY SourceToDestination.policyid INTEGER;",
+    "CREATE PROPERTY SourceToDestination.protocol INTEGER;",
+    "CREATE PROPERTY SourceToDestination.source STRING;",
+    "CREATE PROPERTY SourceToDestination.destination STRING;",
+    "CREATE PROPERTY SourceToDestination.srcport INTEGER;",
+    "CREATE PROPERTY SourceToDestination.device_id STRING;",
+    "CREATE PROPERTY SourceToDestination.sentbyte INTEGER;",
+    "CREATE PROPERTY SourceToDestination.dstintf STRING;",
+    "CREATE PROPERTY SourceToDestination.conn_matches STRING;",
+    "CREATE PROPERTY SourceToDestination.last_seen DATETIME;"
 ]
+
+    
+"""
+{'srcip': '10.255.5.245', 'sentbyte': '4597', 'proto': '17', 'dstintfrole': 'undefined',
+'dstip': '216.58.204.131', 'dstintf': 'port1', 'srcintf': 'port2', 'policyid': '4', 'srcname': 'AD',
+'trandisp': 'snat', 'dstport': '443', 'srcport': '58048', 'srcintfrole': 'undefined', 'devname': 'FGT_LabSecurity'}
+"""
 
 _database_ver_host_creation_commands = [
     "CREATE CLASS Host EXTENDS V;",
-    "CREATE PROPERTY Host.IP STRING;",
-    "CREATE PROPERTY Host.interfaccia STRING;",
+    "CREATE PROPERTY Host.ip STRING;",
+    "CREATE PROPERTY Host.interface STRING;",
 ]
 
 
@@ -43,4 +52,7 @@ for command in _database_ver_link_creation_commands:
 
 for command in _database_ver_host_creation_commands:
     client.command(command)
+    
+    
+    
     

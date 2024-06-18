@@ -1,4 +1,5 @@
 import pyorient
+from datetime import datetime
 
 class OrientDBHandler:
     def __init__(self, host, port, db_name, username, password):
@@ -24,62 +25,75 @@ class OrientDBHandler:
 
     def create_vertices_and_edges(self, data):
         try:
-            print(data)
-            self.connect()  # Assicura che la connessione sia aperta
+            self.connect()  # Ensure the connection is open
+            current_time = datetime.fromisoformat(data["@timestamp"])
 
-            # Controlla se gli host esistono già
-            source = self.get_or_create_host(data['srcip'], data.get('srcintf', 'unknown'))
-            dest = self.get_or_create_host(data['dstip'], data.get('dstintf', 'unknown'))
+            # Get or create source and destination hosts
+            source = self.get_or_create_host(data['srcip'], data['srcintf'], data.get('srcname'))
+            dest = self.get_or_create_host(data['dstip'], data['dstintf'])
 
-            # Creazione o aggiornamento dell'edge LinkToHost
-            query = f"SELECT FROM LinkToHost WHERE out = {source._rid} AND in = {dest._rid}"
+            # Check for existing edge
+            query = f"SELECT FROM SourceToDestination WHERE out = {source._rid} AND in = {dest._rid}"
             existing_links = self.client.query(query)
 
-            if existing_links:
+            if existing_links and len(existing_links) > 0:
                 existing_link = existing_links[0]
-                if 'sentbyte' in data:
-                    new_sentbyte = int(existing_link.oRecordData.get('sentbyte', 0)) + int(data['sentbyte'])
-                    self.client.command(
-                        f"UPDATE LinkToHost SET sentbyte = {new_sentbyte} WHERE @rid = {existing_link._rid}"
-                    )
-                    print(f"Updated edge LinkToHost with RID: {existing_link._rid}")
-                else:
-                    print("Warning: 'sentbyte' field not found in data. Skipping update.")
-                
-            else:  # Altrimenti, crea un nuovo edge
-                proto = int(data['proto']) if 'proto' in data else 0
-                sentbyte = int(data['sentbyte']) if 'sentbyte' in data else 0
-                dstport = int(data['dstport']) if 'dstport' in data else 0
-                policyid = int(data['policyid']) if 'policyid' in data else 0
-                devname = data['devname'] if 'devname' in data else ''
-                trandisp = data['trandisp'] if 'trandisp' in data else ''
+                new_sentbyte = int(existing_link.oRecordData.get('sentbyte', 0)) + int(data.get('sentbyte', 0))
+                new_conn_matches = int(existing_link.oRecordData.get('conn_matches', 0)) + 1
+                self.client.command(
+                    f"UPDATE SourceToDestination SET sentbyte = {new_sentbyte}, conn_matches = {new_conn_matches}, last_seen = '{current_time}' WHERE @rid = {existing_link._rid}"
+                )
+                print(f"Updated edge SourceToDestination with RID: {existing_link._rid}")
+            else:  # Create new edge if it doesn't exist
+                trandisp = data.get('trandisp', '')
+                dstport = int(data.get('dstport', 0))
+                srcintf = data.get('srcintf', '')
+                policyid = int(data.get('policyid', 0))
+                protocol = int(data.get('proto', 0))
+                source_field = data.get('srcip', '')
+                destination = data.get('dstip', '')
+                srcport = int(data.get('srcport', 0))
+                device_id = data.get('devname', '')
+                sentbyte = int(data.get('sentbyte', 0))
+                dstintf = data.get('dstintf', '')
+                conn_matches = 0  
 
                 self.client.command(
-                    f"CREATE EDGE LinkToHost FROM {source._rid} TO {dest._rid} "
-                    f"SET proto = {proto}, sentbyte = {sentbyte}, "
-                    f"dstport = {dstport}, policyid = {policyid}, "
-                    f"devname = '{devname}', trandisp = '{trandisp}'"
+                    f"CREATE EDGE SourceToDestination FROM {source._rid} TO {dest._rid} "
+                    f"SET trandisp = '{trandisp}', "
+                    f"dstport = {dstport}, srcintf = '{srcintf}', policyid = {policyid}, "
+                    f"protocol = {protocol}, source = '{source_field}', destination = '{destination}', "
+                    f"srcport = {srcport}, device_id = '{device_id}', sentbyte = {sentbyte}, "
+                    f"dstintf = '{dstintf}', conn_matches = {conn_matches}, last_seen = '{current_time}'"
                 )
-                print(f"Created edge LinkToHost between {source._rid} and {dest._rid}")
-                
+                print(f"Created edge SourceToDestination between {source._rid} and {dest._rid}")
+
         except pyorient.PyOrientCommandException as e:
             print(f"Error executing OrientDB command: {e}")
         except Exception as e:
             print(f"Unexpected error: {e}")
+            print(data)
         finally:
-            # Non chiudere la connessione qui; lascia aperta per le successive operazioni
+            # Do not close the connection here; leave it open for subsequent operations
             pass
 
-    def get_or_create_host(self, ip, interfaccia):
+    def get_or_create_host(self, ip, interface, name=None):
         try:
-            # Controlla se il vertice Host esiste già
-            query = f"SELECT FROM Host WHERE IP = '{ip}'"
+            # Check if the Host vertex already exists
+            if name is not None:
+                query = f"SELECT FROM Host WHERE name = '{name}'"
+            else:
+                query = f"SELECT FROM Host WHERE ip = '{ip}'"
+                
             result = self.client.query(query)
-
-            if result:  # Se esiste già, restituisci il vertice
+    
+            if result and len(result) > 0:  # If it exists, return the vertex
                 return result[0]
-            else:  # Altrimenti, crea un nuovo vertice Host
-                return self.client.command(f"CREATE VERTEX Host SET IP = '{ip}', interfaccia = '{interfaccia}'")[0]
+            elif name is not None:  # Otherwise, create a new Host vertex
+                return self.client.command(f"CREATE VERTEX Host SET ip = '{ip}', interface = '{interface}', name = '{name}'")[0]
+            else:  # Otherwise, create a new Host vertex without name
+                return self.client.command(f"CREATE VERTEX Host SET ip = '{ip}', interface = '{interface}'")[0]
+        
         except pyorient.PyOrientCommandException as e:
             print(f"Error executing OrientDB command: {e}")
             return None
