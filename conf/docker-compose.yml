@@ -1,0 +1,15 @@
+services:
+  odb1:
+    image: orientdb:latest
+    command: dserver.sh
+    volumes:
+      - database:/orientdb/databases
+    environment:
+      ORIENTDB_ROOT_PASSWORD: root
+    ports:
+      - 2480:2480
+      - 2424:2424
+
+
+volumes:
+  database:
