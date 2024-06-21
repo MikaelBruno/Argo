@@ -48,7 +48,7 @@ public class LogJson {
     private String destinationIp;
 
     @SerializedName("@timestamp")
-    private DateTime timeStamp;
+    private String timeStamp;
 
     // Getter methods
     public Integer getPolicyId() {
@@ -107,7 +107,7 @@ public class LogJson {
         return destinationIp;
     }
 
-    public DateTime getTimeStamp() {
+    public String getTimeStamp() {
         return timeStamp;
     }
 
