@@ -1,7 +1,4 @@
 package com.vem.model;
-
-import org.joda.time.DateTime;
-
 import com.google.gson.annotations.SerializedName;
 
 public class LogJson {

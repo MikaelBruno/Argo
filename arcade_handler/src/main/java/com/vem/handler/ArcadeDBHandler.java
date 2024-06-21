@@ -1,11 +1,17 @@
 package com.vem.handler;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import com.arcadedb.graph.MutableEdge;
 import com.arcadedb.graph.Vertex;
 import com.arcadedb.query.sql.executor.Result;
@@ -13,6 +19,8 @@ import com.arcadedb.query.sql.executor.ResultSet;
 import com.arcadedb.remote.RemoteDatabase;
 import com.google.gson.Gson;
 import com.vem.model.LogJson;
+
+import java.util.Date;
 
 
 public class ArcadeDBHandler {
@@ -27,14 +35,11 @@ public class ArcadeDBHandler {
         // trasformo il fakeJson in un oggetto 
         Gson gson = new Gson();
         LogJson log = gson.fromJson(message, LogJson.class);
-        String timestamp = log.getTimeStamp();
-        System.out.println("il mio time stamp è = " + timestamp);
-        // DateTime dt = new DateTime(timestamp);
-        // System.out.println("il mio datetime è = " + dt);
 
-        OffsetDateTime offsetDateTime = OffsetDateTime.parse(timestamp);
-        OffsetDateTime utcDateTime = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
-        System.out.println("il mio UTC è = " + utcDateTime);
+        String timestamp = log.getTimeStamp();        
+        System.out.println("il mio time stamp è = " + timestamp);
+
+
 
         // connessione al DB
         RemoteDatabase database = new RemoteDatabase("192.168.241.35", 2480, "Vem", "root", "playwithdata");
@@ -105,27 +110,14 @@ public class ArcadeDBHandler {
                 newSourceToDestinationParameters.put("device_id", log.getDeviceName());
                 newSourceToDestinationParameters.put("sent_byte", Optional.ofNullable(log.getSentByte()).orElse(0));
                 newSourceToDestinationParameters.put("dst_nic", log.getDestinationInterface());
+                newSourceToDestinationParameters.put("last_seen", timestamp);
                 newSourceToDestinationParameters.put("conn_matches", 0); 
                 // TODO gestire last_seen
 
         if (isInsert) {
             // qui creiamo l'edge
-            Map<String, Object> sourceToDestinationParameters = new HashMap<>();
-                sourceToDestinationParameters.put("trandip", log.getTransactionDisposition());
-                sourceToDestinationParameters.put("dst_port", log.getDestinationPort());
-                sourceToDestinationParameters.put("src_nic", log.getSourceInterface());
-                sourceToDestinationParameters.put("policy_id", log.getPolicyId());
-                sourceToDestinationParameters.put("protocol", log.getProtocol());
-                sourceToDestinationParameters.put("source_ip", log.getSourceIp());
-                sourceToDestinationParameters.put("destination_ip", log.getDestinationIp());
-                sourceToDestinationParameters.put("src_port", log.getSourcePort());
-                sourceToDestinationParameters.put("device_id", log.getDeviceName());
-                sourceToDestinationParameters.put("sent_byte", Optional.ofNullable(log.getSentByte()).orElse(0));
-                sourceToDestinationParameters.put("dst_nic", log.getDestinationInterface());
-                sourceToDestinationParameters.put("time_stamp", utcDateTime);
-                sourceToDestinationParameters.put("conn_matches", 0);
             // TODO gestire last_seen
-            MutableEdge edge = sourceHostV.newEdge("SourceToDestination", destinationHostV, true, sourceToDestinationParameters).save(); // edge in questo caso embedded direzionale da source a destination
+            MutableEdge edge = sourceHostV.newEdge("SourceToDestination", destinationHostV, true, newSourceToDestinationParameters).save(); // edge in questo caso embedded direzionale da source a destination
             String print = "SourceToDestination Edge creato: FROM RID:" + sourceHostV.getIdentity().toString() + " TO " + destinationHostV.getIdentity().toString();
             System.out.println(print);
 
@@ -154,7 +146,7 @@ public class ArcadeDBHandler {
                 
                 long newSentByte = ((long) newSourceToDestinationParameters.get("sent_byte")) + olEdge.getLong("sent_byte");
                 int conn_matches = (olEdge.getInteger("conn_matches") + 1);
-                olEdge.set("sent_byte", newSentByte).set("conn_matches", conn_matches).save();
+                olEdge.set("sent_byte", newSentByte).set("conn_matches", conn_matches).set("last_seen", timestamp).save();
                 String print = "SourceToDestination Edge aggiornato: FROM RID:" + sourceHostV.getIdentity().toString() + " TO RID:" + destinationHostV.getIdentity().toString();
                 System.out.println(print);
             } else {
