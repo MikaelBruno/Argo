@@ -15,23 +15,23 @@ public class ConfigArcadeDB {
         assert(databases.contains("Vem"));
 
         String schema = """
-            CREATE EDGE TYPE SourceToDestination;
+            CREATE EDGE TYPE SourceToDestination IF NOT EXIST;
 
             CREATE PROPERTY SourceToDestination.trandip STRING;
-            CREATE PROPERTY SourceToDestination.dstport INTEGER;
-            CREATE PROPERTY SourceToDestination.srcintf STRING;
-            CREATE PROPERTY SourceToDestination.policyid INTEGER;
+            CREATE PROPERTY SourceToDestination.dst_port INTEGER;
+            CREATE PROPERTY SourceToDestination.src_nic STRING;
+            CREATE PROPERTY SourceToDestination.policy_id INTEGER;
             CREATE PROPERTY SourceToDestination.protocol INTEGER;
-            CREATE PROPERTY SourceToDestination.source STRING;
-            CREATE PROPERTY SourceToDestination.destination STRING;
-            CREATE PROPERTY SourceToDestination.srcport INTEGER;
+            CREATE PROPERTY SourceToDestination.source_ip STRING;
+            CREATE PROPERTY SourceToDestination.destination_ip STRING;
+            CREATE PROPERTY SourceToDestination.src_port INTEGER;
             CREATE PROPERTY SourceToDestination.device_id STRING;
-            CREATE PROPERTY SourceToDestination.sentbyte INTEGER;
-            CREATE PROPERTY SourceToDestination.dstintf STRING;
+            CREATE PROPERTY SourceToDestination.sent_byte INTEGER;
+            CREATE PROPERTY SourceToDestination.dst_nic STRING;
             CREATE PROPERTY SourceToDestination.conn_matches STRING;
             CREATE PROPERTY SourceToDestination.last_seen DATETIME;
 
-            CREATE VERTEX TYPE Host;
+            CREATE VERTEX TYPE Host IF NOT EXIST;
 
             CREATE PROPERTY Host.ip STRING;
             CREATE PROPERTY Host.interface STRING;
