@@ -54,6 +54,12 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
         </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.13</version> <!-- Aggiorna alla versione più recente -->
+        </dependency>
+
     </dependencies>
 
 </project>
