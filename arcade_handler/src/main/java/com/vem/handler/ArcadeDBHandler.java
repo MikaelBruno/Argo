@@ -52,28 +52,34 @@ public class ArcadeDBHandler {
         if ( resultsetSourceHost.hasNext() ) {
             Result record = resultsetSourceHost.next();
             sourceHostV = record.getVertex().get();
+            String print = "Source Vertex trovato RID:" + sourceHostV.getIdentity().toString();
+            System.out.println(print);
 
         } else {
             // allora non esiste il record e deve essere creato
             sourceHostV = database.newVertex("Host").set("ip", log.getSourceIp()).set("interface", log.getSourceInterface()).save();
             isInsert = true;
+            String print = "Source Vertex creato RID:" + sourceHostV.getIdentity().toString();
+            System.out.println(print);
         }
 
         //prende il primo record della lista (qui dovrebbe sempre essercene uno o zero)
         if ( resultsetDestinationeHost.hasNext() ) {
             Result record = resultsetDestinationeHost.next();
             destinationHostV = record.getVertex().get();
+            String print = "Destination Vertex trovato RID:" + sourceHostV.getIdentity().toString();
+            System.out.println(print);
 
         } else {
             // allora non esiste il record e deve essere creato
             destinationHostV = database.newVertex("Host").set("ip", log.getDestinationIp()).set("interface", log.getDestinationInterface()).save();
             isInsert = true;
+            String print = "Destination Vertex creato RID:" + sourceHostV.getIdentity().toString();
+            System.out.println(print);
         }
 
         // in ogni caso (creati o recuperati) a noi interessano i RID di sourceHost e destinationHost per recuperare gli edge collegati ad essi
         // ovviamente se creiamo uno dei due vertici o entrambi allora non esiste un edge tra di loro
-        
-
         if (isInsert) {
             // qui creiamo l'edge
             Map<String, Object> sourceToDestinationParameters = new HashMap<>();
@@ -90,13 +96,9 @@ public class ArcadeDBHandler {
                 sourceToDestinationParameters.put("dst_nic", log.getDestinationInterface());
                 sourceToDestinationParameters.put("conn_matches", 0); 
             // TODO gestire last_seen
-
-            System.out.println(sourceToDestinationParameters);
-            System.out.println("ciapo");
-
             MutableEdge edge = sourceHostV.newEdge("SourceToDestination", destinationHostV, true, sourceToDestinationParameters).save(); // edge in questo caso embedded direzionale da source a destination
-
-            
+            String print = "SourceToDestination Edge creato: FROM RID:" + sourceHostV.getIdentity().toString() + " TO " + destinationHostV.getIdentity().toString();
+            System.out.println(print);
         } else {
             // qui cerchiamo tra gli edge se c'è uno con le stesse proprietà, se c'è ci salviamo il rid e aggiorniamo i byte (se ci sono) e last seen (datetime)
             // altrimenti ne creiamo uno nuovo
