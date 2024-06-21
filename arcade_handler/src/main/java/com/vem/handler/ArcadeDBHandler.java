@@ -80,7 +80,6 @@ public class ArcadeDBHandler {
                 edgeSourceToDestinationParameters.put("ridDestination", ridDestination);
             
             ResultSet resultEdgeSourceToDestination = database.query("sql", queryEdgeSourceToDestination, edgeSourceToDestinationParameters);
-            System.out.println(resultEdgeSourceToDestination.estimateSize());
             
             while (resultEdgeSourceToDestination.hasNext()) {
                 Result record = resultEdgeSourceToDestination.next();
