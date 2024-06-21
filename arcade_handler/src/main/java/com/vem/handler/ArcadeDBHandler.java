@@ -1,13 +1,8 @@
 package com.vem.handler;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.locationtech.jts.geomgraph.Edge;
-
 import com.arcadedb.graph.MutableEdge;
 import com.arcadedb.graph.Vertex;
 import com.arcadedb.query.sql.executor.Result;
@@ -16,9 +11,11 @@ import com.arcadedb.remote.RemoteDatabase;
 import com.google.gson.Gson;
 import com.vem.model.LogJson;
 
+
 public class ArcadeDBHandler {
     
     public void main(String message) {
+        
         // flag per indicare se i vertici vengono creati
         boolean isInsert = false;
         Vertex sourceHostV;
@@ -27,24 +24,33 @@ public class ArcadeDBHandler {
         // trasformo il fakeJson in un oggetto 
         Gson gson = new Gson();
         LogJson log = gson.fromJson(message, LogJson.class);
+        String timestamp = log.getTimeStamp().toString();
+        System.out.println("il mio time stamp è = " + timestamp);
 
         // connessione al DB
-        RemoteDatabase database = new RemoteDatabase("localhost", 2480, "Vem", "root", "playwithdata");
+        RemoteDatabase database = new RemoteDatabase("192.168.241.35", 2480, "Vem", "root", "playwithdata");
+        
+
 
         // Composizione query e parametri 
         String querySelectHost = "select * from Host where ip = :ip AND interface = :interface";
+
 
         Map<String,Object> sourceHostParameters = new HashMap<>();
             sourceHostParameters.put("ip", log.getSourceIp());
             sourceHostParameters.put("interface", log.getSourceInterface());
 
+
         Map<String,Object> destinationHostParameters = new HashMap<>();
             destinationHostParameters.put("ip", log.getDestinationIp());
             destinationHostParameters.put("interface", log.getDestinationInterface());
 
+
         //query al dispositivo
         ResultSet resultsetSourceHost = database.query("sql", querySelectHost, sourceHostParameters);
         ResultSet resultsetDestinationeHost = database.query("sql", querySelectHost, destinationHostParameters);
+
+        
 
         //prende il primo record della lista (qui dovrebbe sempre essercene uno o zero)
         if ( resultsetSourceHost.hasNext() ) {
@@ -60,6 +66,8 @@ public class ArcadeDBHandler {
             String print = "Source Vertex creato RID:" + sourceHostV.getIdentity().toString();
             System.out.println(print);
         }
+        
+
 
         //prende il primo record della lista (qui dovrebbe sempre essercene uno o zero)
         if ( resultsetDestinationeHost.hasNext() ) {
@@ -75,6 +83,8 @@ public class ArcadeDBHandler {
             String print = "Destination Vertex creato RID:" + destinationHostV.getIdentity().toString();
             System.out.println(print);
         }
+        
+
 
         // in ogni caso (creati o recuperati) a noi interessano i RID di sourceHost e destinationHost per recuperare gli edge collegati ad essi
         // ovviamente se creiamo uno dei due vertici o entrambi allora non esiste un edge tra di loro

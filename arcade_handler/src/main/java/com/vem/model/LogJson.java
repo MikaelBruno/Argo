@@ -1,5 +1,7 @@
 package com.vem.model;
 
+import org.joda.time.DateTime;
+
 import com.google.gson.annotations.SerializedName;
 
 public class LogJson {
@@ -44,6 +46,9 @@ public class LogJson {
 
     @SerializedName("dstip")
     private String destinationIp;
+
+    @SerializedName("@timestamp")
+    private DateTime timeStamp;
 
     // Getter methods
     public Integer getPolicyId() {
@@ -102,6 +107,10 @@ public class LogJson {
         return destinationIp;
     }
 
+    public DateTime getTimeStamp() {
+        return timeStamp;
+    }
+
     @Override
     public String toString() {
         return "LogJson{" +
@@ -119,6 +128,7 @@ public class LogJson {
                 ", protocol=" + protocol +
                 ", destinationInterfaceRole='" + destinationInterfaceRole + '\'' +
                 ", destinationIp='" + destinationIp + '\'' +
+                ", timeStamp='" + timeStamp + '\'' +
                 '}';
     }
 }
